@@ -1,10 +1,9 @@
 package pt.isel
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.completeWith
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
@@ -27,17 +26,17 @@ class InteropSuspendAndCps {
     }
 
     @Test
-    fun callSuspendAsCpsFunction() = runBlocking {
+    fun callSuspendAsCpsFunction() {
         val incHandler = ::increment as (Int, Continuation<Int>) -> Unit
-        val res = CompletableDeferred<Int>()
+        val res = CompletableFuture<Int>()
         incHandler(7, object : Continuation<Int>{
             override val context = EmptyCoroutineContext
 
             override fun resumeWith(result: Result<Int>) {
-                res.completeWith(result)
+                res.complete(result.getOrThrow())
             }
         })
-        assertEquals(8, res.await())
+        assertEquals(8, res.join())
     }
 
     @Test
