@@ -1,9 +1,6 @@
 package pt.isel
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class BuildSequenceTest {
 
@@ -61,4 +58,14 @@ class BuildSequenceTest {
         val actual = buildSequence<Int> { /* yield nothing */ }.iterator()
         assertFalse(actual.hasNext())
     }
+    @Test fun sequenceWithError() {
+        val actual = buildSequence<Int> {
+            yield(1)
+            throw CustomError()
+        }.iterator()
+        assertTrue(actual.hasNext())
+        assertEquals(1, actual.next())
+        assertFailsWith<CustomError> { actual.next() }
+    }
+    class CustomError : RuntimeException()
 }
